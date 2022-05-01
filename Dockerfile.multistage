@@ -1,0 +1,14 @@
+FROM golang:1.16-alpine AS derleyici
+RUN apk update && apk upgrade && apk add --no-cache bash git
+RUN apk add --update curl && rm -rf /var/cache/apk/*
+WORKDIR /websocket
+COPY . /websocket
+RUN go mod vendor
+RUN go build
+
+FROM alpine
+RUN apk add --update curl && rm -rf /var/cache/apk/*
+COPY --from=derleyici /websocket/websocket .
+WORKDIR /
+EXPOSE 8080
+ENTRYPOINT ./websocket
